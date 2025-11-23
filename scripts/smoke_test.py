@@ -3,7 +3,25 @@ import sys
 import argparse
 import time
 
+def wait_for_service(url, timeout=30):
+    start_time = time.time()
+    print(f"Waiting for service at {url} to become available...")
+    while time.time() - start_time < timeout:
+        try:
+            resp = requests.get(f"{url}/health")
+            if resp.status_code == 200:
+                print("✅ Service is up!")
+                return True
+        except requests.exceptions.ConnectionError:
+            pass
+        time.sleep(1)
+    print(f"❌ Service failed to start within {timeout} seconds")
+    return False
+
 def smoke_test(url):
+    if not wait_for_service(url):
+        return False
+
     print(f"Running smoke tests against {url}...")
     
     # 1. Health Check
