@@ -1,4 +1,8 @@
 flask
+flask-cors
+pandas
+# Dependencies for testing/production (optional but good to have)
 pytest
 pytest-cov
+gunicorn
 requests

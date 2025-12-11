@@ -44,7 +44,8 @@ steps:
       - '-c'
       - |
         mkdir -p deployment-package
-        cp -r hero_lib scripts requirements.txt setup.py deployment-package/
+        # Copy backend files and "new UI" folder (quoted to handle spaces)
+        cp -r hero_lib scripts requirements.txt setup.py "new UI" deployment-package/
         tar -czf deployment-${SHORT_SHA}.tar.gz -C deployment-package .
         gsutil cp deployment-${SHORT_SHA}.tar.gz gs://${_ARTIFACT_BUCKET}/
     id: 'create-package'
@@ -90,29 +91,46 @@ steps:
             tar -xzf deployment-${SHORT_SHA}.tar.gz -C current/
             cd current
             
-            # Setup Virtual Environment
+            # --- BACKEND SETUP ---
+            echo 'Setting up Backend...'
             python3 -m venv venv
             source venv/bin/activate
             pip install -r requirements.txt
+            
+            # --- FRONTEND SETUP ---
+            echo 'Setting up Frontend...'
+            cd 'new UI'
+            # Install deps (passing legacy-peer-deps to avoid conflicts)
+            npm install --legacy-peer-deps
+            # Build Next.js app
+            npm run build
+            cd ..
             
             # Install PM2 if not exists
             if ! command -v pm2 &> /dev/null; then
               sudo npm install -g pm2
             fi
             
-            # Stop existing application
-            pm2 stop hero_lib || true
+            # Stop existing applications
+            pm2 delete hero_lib || true
+            pm2 delete libera-ui || true
             
-            # Start application with PM2 (using python interpreter)
-            # Assuming app.py is the entry point and runs on port 3000 or defined port
-            # We explicitly invoke python from the venv
+            # Start Backend Application
             pm2 start hero_lib/app.py --name hero_lib --interpreter ./venv/bin/python3
+            
+            # Start Frontend Application
+            cd 'new UI'
+            pm2 start npm --name 'libera-ui' -- start
+            cd ..
+            
             pm2 save
             
-            echo 'Waiting 5 seconds for app to initialize...'
+            echo 'Waiting 5 seconds for apps to initialize...'
             sleep 5
+            echo '--- PM2 Status ---'
+            pm2 status
             echo '--- Application Logs (Start) ---'
-            pm2 logs hero_lib --lines 20 --nostream --err --out
+            pm2 logs --lines 20 --nostream
             echo '--- Application Logs (End) ---'
             
             # Setup PM2 to start on reboot
