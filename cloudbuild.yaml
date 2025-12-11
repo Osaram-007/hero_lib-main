@@ -2,17 +2,14 @@
 # GCP Cloud Build configuration for Python CI/CD pipeline
 
 steps:
-  # Step 0: Checkout code (required because we use --no-source)
-  - name: 'gcr.io/cloud-builders/git'
-    args: ['clone', 'https://github.com/Osaram-007/hero_lib-main.git', '.']
-    id: 'checkout'
+
 
   # Step 1: Install dependencies
   - name: 'python:3.9'
     entrypoint: 'pip'
     args: ['install', '-r', 'requirements.txt']
     id: 'install-deps'
-    waitFor: ['checkout']
+
 
   # Step 2: Run linting
   - name: 'python:3.9'
