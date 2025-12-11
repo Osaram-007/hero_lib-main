@@ -25,7 +25,7 @@ export function BooksTable() {
         setLoading(true);
         setError("");
         try {
-            const res = await fetch(`http://localhost:5000/books?page=${page}&limit=12`);
+            const res = await fetch(`http://${window.location.hostname}:5000/books?page=${page}&limit=12`);
             if (!res.ok) throw new Error("Failed to fetch books");
             const data = await res.json();
             setBooks(data.data);
