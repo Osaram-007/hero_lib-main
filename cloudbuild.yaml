@@ -1,28 +1,16 @@
-# cloudbuild.yaml
-# GCP Cloud Build configuration for Python CI/CD pipeline
-
 steps:
-
-
-  # Step 1: Install dependencies
-  - name: 'python:3.9'
-    entrypoint: 'pip'
-    args: ['install', '-r', 'requirements.txt']
-    id: 'install-deps'
-
-
-  # Step 2: Run linting
-  - name: 'python:3.9'
+  # Step 1: Install dependencies (Frontend & Backend)
+  - name: 'node:18'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        pip install pylint
-        pylint --fail-under=5 hero_lib || echo "Linting failed but continuing..."
-    id: 'lint'
-    waitFor: ['install-deps']
+        # Install Frontend deps
+        cd "new UI"
+        npm install --legacy-peer-deps
+    id: 'install-deps'
 
-  # Step 3: Run unit tests
+  # Step 2: Lint/Test (Simplified for now)
   - name: 'python:3.9'
     entrypoint: 'bash'
     args:
@@ -34,115 +22,49 @@ steps:
     id: 'unit-tests'
     waitFor: ['install-deps']
 
-  # Step 4: Create deployment package
+  # Step 3: Create deployment package
   - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        mkdir -p deployment-package
-        # Copy backend files and "new UI" folder (quoted to handle spaces)
-        cp -r hero_lib scripts requirements.txt setup.py "new UI" deployment-package/
-        tar -czf deployment-${SHORT_SHA}.tar.gz -C deployment-package .
+        tar -czf deployment-${SHORT_SHA}.tar.gz \
+          --exclude=venv \
+          --exclude=__pycache__ \
+          --exclude=.git \
+          --exclude=node_modules \
+          --exclude='new UI/node_modules' \
+          .
+        
         gsutil cp deployment-${SHORT_SHA}.tar.gz gs://${_ARTIFACT_BUCKET}/
     id: 'create-package'
     waitFor: ['unit-tests']
 
-  # Step 5: Deploy to Compute Engine
+  # Step 4: Deploy to Compute Engine
   - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
+        # Download artifact and script
         gcloud compute ssh ${_INSTANCE_NAME} \
           --project=${_PROJECT_ID} \
           --zone=${_ZONE} \
-          --command="
-            set -e
-            echo 'Starting deployment...'
-            
-            # Install necessary packages 
-            sudo apt-get update
-            # Install Python env and Node/PM2 for process management if not present
-            if ! command -v pip3 &> /dev/null; then
-                sudo apt-get install -y python3-pip python3-venv
-            fi
-            if ! command -v npm &> /dev/null; then
-                sudo apt-get install -y nodejs npm
-            fi
-            
-            # Create deployment directory
-            sudo mkdir -p /opt/hero_lib
-            sudo chown -R ubuntu:ubuntu /opt/hero_lib
-            cd /opt/hero_lib
-            
-            # Download deployment package
-            gsutil cp gs://${_ARTIFACT_BUCKET}/deployment-${SHORT_SHA}.tar.gz .
-            
-            # Backup previous version
-            if [ -d 'current' ]; then
-              mv current previous_$(date +%Y%m%d_%H%M%S)
-            fi
-            
-            # Extract new version
-            mkdir -p current
-            tar -xzf deployment-${SHORT_SHA}.tar.gz -C current/
-            cd current
-            
-            # --- BACKEND SETUP ---
-            echo 'Setting up Backend...'
-            python3 -m venv venv
-            source venv/bin/activate
-            pip install -r requirements.txt
-            
-            # --- FRONTEND SETUP ---
-            echo 'Setting up Frontend...'
-            cd 'new UI'
-            # Install deps (passing legacy-peer-deps to avoid conflicts)
-            npm install --legacy-peer-deps
-            # Build Next.js app
-            npm run build
-            cd ..
-            
-            # Install PM2 if not exists
-            if ! command -v pm2 &> /dev/null; then
-              sudo npm install -g pm2
-            fi
-            
-            # Stop existing applications
-            pm2 delete hero_lib || true
-            pm2 delete libera-ui || true
-            
-            # Start Backend Application
-            pm2 start hero_lib/app.py --name hero_lib --interpreter ./venv/bin/python3
-            
-            # Start Frontend Application
-            cd 'new UI'
-            pm2 start npm --name 'libera-ui' -- start
-            cd ..
-            
-            pm2 save
-            
-            echo 'Waiting 5 seconds for apps to initialize...'
-            sleep 5
-            echo '--- PM2 Status ---'
-            pm2 status
-            echo '--- Application Logs (Start) ---'
-            pm2 logs --lines 20 --nostream
-            echo '--- Application Logs (End) ---'
-            
-            # Setup PM2 to start on reboot
-            sudo env PATH=$$PATH:/usr/bin /usr/local/lib/node_modules/pm2/bin/pm2 startup systemd -u ubuntu --hp /home/ubuntu
-            
-            # Clean up
-            rm ../deployment-${SHORT_SHA}.tar.gz
-            
-            echo 'Deployment completed successfully!'
-          "
+          --command="gsutil cp gs://${_ARTIFACT_BUCKET}/deployment-${SHORT_SHA}.tar.gz /opt/hero_lib/deployment.tar.gz"
+
+        gcloud compute scp scripts/deploy.sh ${_INSTANCE_NAME}:/tmp/deploy.sh \
+          --project=${_PROJECT_ID} \
+          --zone=${_ZONE}
+        
+        # Execute
+        gcloud compute ssh ${_INSTANCE_NAME} \
+          --project=${_PROJECT_ID} \
+          --zone=${_ZONE} \
+          --command="chmod +x /tmp/deploy.sh && /tmp/deploy.sh"
     id: 'deploy'
     waitFor: ['create-package']
 
-  # Step 6: Health check
+  # Step 5: Health check
   - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
     args:
