@@ -10,7 +10,18 @@ steps:
         npm install --legacy-peer-deps
     id: 'install-deps'
 
-  # Step 2: Lint/Test (Simplified for now)
+  # Step 2a: Frontend Verification (Lint)
+  - name: 'node:18'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        cd "new UI"
+        npm run lint
+    id: 'frontend-verify'
+    waitFor: ['install-deps']
+
+  # Step 2b: Backend Verification (Test)
   - name: 'python:3.9'
     entrypoint: 'bash'
     args:
@@ -52,7 +63,7 @@ steps:
           --zone=${_ZONE} \
           --command="gsutil cp gs://${_ARTIFACT_BUCKET}/deployment-${SHORT_SHA}.tar.gz /opt/hero_lib/deployment.tar.gz"
 
-        gcloud compute scp scripts/deploy.sh ${_INSTANCE_NAME}:/tmp/deploy.sh \
+        gcloud compute scp scripts/deploy.sh scripts/rollback.sh ${_INSTANCE_NAME}:/tmp/ \
           --project=${_PROJECT_ID} \
           --zone=${_ZONE}
         
@@ -60,7 +71,7 @@ steps:
         gcloud compute ssh ${_INSTANCE_NAME} \
           --project=${_PROJECT_ID} \
           --zone=${_ZONE} \
-          --command="chmod +x /tmp/deploy.sh && /tmp/deploy.sh"
+          --command="chmod +x /tmp/deploy.sh /tmp/rollback.sh && sudo cp /tmp/rollback.sh /usr/local/bin/rollback-hero && sudo chmod +x /usr/local/bin/rollback-hero && /tmp/deploy.sh"
     id: 'deploy'
     waitFor: ['create-package']
 
