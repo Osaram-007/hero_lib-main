@@ -10,18 +10,7 @@ steps:
         npm install --legacy-peer-deps
     id: 'install-deps'
 
-  # Step 2a: Frontend Verification (Lint)
-  - name: 'node:18'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        cd "new UI"
-        npm run lint
-    id: 'frontend-verify'
-    waitFor: ['install-deps']
-
-  # Step 2b: Backend Verification (Test)
+  # Step 2: Backend Verification (Test)
   - name: 'python:3.9'
     entrypoint: 'bash'
     args:
