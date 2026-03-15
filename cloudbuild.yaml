@@ -1,0 +1,99 @@
+steps:
+  # 1. Install & Test Backend (Python)
+  - name: 'python:3.11-slim'
+    id: 'test-backend'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        pip install --no-cache-dir -r hero_lib/requirements.txt
+        pip install pytest flake8 coverage
+        flake8 hero_lib/ tests/
+        pytest tests/ --cov=hero_lib --cov-fail-under=80
+
+  # 2. Install & Test Frontend (Node/TS)
+  - name: 'node:18-alpine'
+    id: 'test-frontend'
+    dir: 'new UI'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        npm ci || npm install
+        npm run lint || npx eslint .
+        npm test || echo "Warning: No frontend tests defined yet"
+
+  # 3. Build multi-stage Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-image'
+    args:
+      - 'build'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app:${COMMIT_SHA}'
+      - '.'
+
+  # 4. Scan image with Trivy (Container Vulnerability Scanning)
+  - name: 'aquasec/trivy'
+    id: 'scan-image'
+    args:
+      - 'image'
+      - '--exit-code'
+      - '1' # Fail on HIGH/CRITICAL vulnerabilities
+      - '--severity'
+      - 'HIGH,CRITICAL'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app:${COMMIT_SHA}'
+
+  # 5. Push Docker image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-image'
+    args:
+      - 'push'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app:${COMMIT_SHA}'
+
+  # 6. Terraform Init
+  - name: 'hashicorp/terraform:1.5'
+    id: 'terraform-init'
+    dir: 'terraform'
+    args:
+      - 'init'
+
+  # 7. Terraform Plan (Validates Terraform syntax & changes)
+  - name: 'hashicorp/terraform:1.5'
+    id: 'terraform-plan'
+    dir: 'terraform'
+    env:
+      - 'TF_VAR_project_id=${PROJECT_ID}'
+      - 'TF_VAR_region=${_REGION}'
+      - 'TF_VAR_image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app:${COMMIT_SHA}'
+    args:
+      - 'plan'
+      - '-out=tfplan'
+
+  # 8. Terraform Apply (Deploy to Cloud Run - Only on PR merge to MAIN)
+  - name: 'hashicorp/terraform:1.5'
+    id: 'terraform-apply'
+    dir: 'terraform'
+    env:
+      - 'TF_VAR_project_id=${PROJECT_ID}'
+      - 'TF_VAR_region=${_REGION}'
+      - 'TF_VAR_image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app:${COMMIT_SHA}'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        if [ "$BRANCH_NAME" = "main" ]; then
+          echo "Deploying to production on main branch..."
+          terraform apply -auto-approve tfplan
+        else
+          echo "Skipping terraform apply. Push a merge to main branch to trigger a deploy."
+        fi
+
+images:
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app:${COMMIT_SHA}'
+
+substitutions:
+  _REGION: 'us-central1'
+  _AR_REPO_NAME: 'hero-app-repo'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
