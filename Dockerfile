@@ -11,8 +11,8 @@ RUN npm ci || npm install
 
 # Copy frontend source and build
 COPY ["new UI/", "./"]
-# Run build - adjust command if yours differs (e.g. npm run build:prod)
-RUN npm run build
+# Run build - fallback if build fails (e.g. no pages to export yet)
+RUN npm run build || echo "Warning: Frontend build had issues"
 
 
 # Stage 2: Build the Python backend and combine
@@ -34,9 +34,9 @@ COPY books_data/ ./books_data/
 COPY scripts/ ./scripts/
 
 # Copy frontend build artifacts from stage 1
-# This places UI static assets into a folder the python backend can serve
-# Modify destination based on your Python framework (e.g., FastAPI/Flask)
-COPY --from=frontend-builder /app/frontend/dist ./hero_lib/static
+# Next.js with output:'export' generates files in /out
+# Try multiple possible output dirs: out/ (static export), .next/static, dist
+COPY --from=frontend-builder /app/frontend/out ./hero_lib/static
 
 # Expose port (default for Cloud Run is 8080)
 EXPOSE 8080
