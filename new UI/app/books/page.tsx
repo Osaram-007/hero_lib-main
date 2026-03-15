@@ -2,57 +2,40 @@ import { BooksTable } from "@/components/books-table";
 
 export default function BooksPage() {
     return (
-        <main className="min-h-screen bg-slate-50 dark:bg-[#0f172a] text-slate-900 dark:text-white font-sans selection:bg-blue-100 dark:selection:bg-blue-900">
-            {/* Header Section */}
-            <header className="sticky top-0 z-10 backdrop-blur-lg bg-white/70 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800">
-                <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <div className="h-8 w-8 bg-black dark:bg-white rounded-lg flex items-center justify-center">
-                            <span className="text-white dark:text-black font-bold text-lg">L</span>
-                        </div>
-                        <h1 className="text-2xl font-bold tracking-tight">LIBERA</h1>
-                    </div>
-                    <nav className="hidden md:flex items-center gap-8">
-                        {['Overview', 'Books', 'Authors', 'Community'].map((item) => (
-                            <a
-                                key={item}
-                                href="#"
-                                className={`text-sm font-medium transition-colors ${item === 'Books'
-                                        ? 'text-black dark:text-white'
-                                        : 'text-slate-500 hover:text-black dark:text-slate-400 dark:hover:text-white'
-                                    }`}
-                            >
-                                {item}
-                            </a>
-                        ))}
-                    </nav>
-                    <div className="flex items-center gap-4">
-                        <button className="text-sm font-medium text-slate-500 hover:text-black dark:text-slate-400 dark:hover:text-white">
-                            Log in
-                        </button>
-                        <button className="bg-black hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 text-white dark:text-black px-4 py-2 rounded-full text-sm font-medium transition-all">
-                            Get Started
-                        </button>
-                    </div>
-                </div>
-            </header>
-
+        <main className="flex-grow w-full">
             {/* Hero / Content */}
-            <div className="max-w-7xl mx-auto px-6 py-12">
-                <div className="mb-12 text-center md:text-left">
-                    <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4 bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">
-                        Discover Your Next<br /> Great Read.
-                    </h1>
-                    <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl">
-                        Explore our curated collection of books from around the world. Track your reading, review titles, and join the discussion.
-                    </p>
+            <div className="relative overflow-hidden w-full">
+                {/* Background decorative elements */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[400px] opacity-30 dark:opacity-10 pointer-events-none">
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-300 to-purple-400 dark:from-indigo-600 dark:to-purple-900 blur-[100px] rounded-full mix-blend-multiply dark:mix-blend-screen" />
                 </div>
+                
+                <div className="max-w-7xl mx-auto px-6 py-20 relative z-10">
+                    <div className="mb-16 text-center md:text-left max-w-3xl">
+                        <div className="inline-flex items-center gap-2 mb-6 px-4 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full shadow-sm text-sm font-medium text-slate-600 dark:text-slate-300">
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                            </span>
+                            Library Collection is Live
+                        </div>
+                        <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6 text-slate-900 dark:text-white drop-shadow-sm">
+                            Discover Your Next<br />
+                            <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600 dark:from-indigo-400 dark:to-purple-500">
+                                Great Read.
+                            </span>
+                        </h1>
+                        <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
+                            Explore our curated collection of books from around the world. Track your reading, review titles, and join the discussion in a beautifully responsive environment.
+                        </p>
+                    </div>
 
-                <BooksTable />
+                    <BooksTable />
+                </div>
             </div>
 
-            <footer className="border-t border-slate-200 dark:border-slate-800 mt-20 py-12 bg-white dark:bg-slate-900">
-                <div className="max-w-7xl mx-auto px-6 text-center text-slate-400 text-sm">
+            <footer className="border-t border-slate-200/60 dark:border-slate-800/60 mt-20 py-12 bg-slate-50/50 dark:bg-slate-900/20">
+                <div className="max-w-7xl mx-auto px-6 text-center text-slate-500 dark:text-slate-400 text-sm font-medium">
                     <p>© 2024 Libera. All rights reserved.</p>
                 </div>
             </footer>

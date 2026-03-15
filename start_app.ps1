@@ -1,8 +1,14 @@
 Write-Host "Starting Libera Application..." -ForegroundColor Cyan
 
+# 0. Ensure Virtual Environment Exists
+if (-not (Test-Path -Path "venv")) {
+    Write-Host "Creating virtual environment..." -ForegroundColor Yellow
+    python -m venv venv
+}
+
 # 1. Install Python Dependencies
-Write-Host "Installing Python dependencies..." -ForegroundColor Yellow
-pip install -r requirements.txt
+Write-Host "Installing Python dependencies inside venv..." -ForegroundColor Yellow
+.\venv\Scripts\pip install -r requirements.txt
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Failed to install Python dependencies. Please check your Python installation." -ForegroundColor Red
     exit $LASTEXITCODE
@@ -10,7 +16,7 @@ if ($LASTEXITCODE -ne 0) {
 
 # 2. Start Backend (Flask)
 Write-Host "Starting Backend Server (Flask)..." -ForegroundColor Green
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "& { $host.UI.RawUI.WindowTitle = 'Libera Backend'; python -m hero_lib.app }"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "& { $host.UI.RawUI.WindowTitle = 'Libera Backend'; .\venv\Scripts\python -m hero_lib.app }"
 
 # 3. Start Frontend (Next.js)
 Write-Host "Starting Frontend Server (Next.js)..." -ForegroundColor Green
