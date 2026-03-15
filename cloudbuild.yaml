@@ -6,7 +6,7 @@ steps:
     args:
       - '-c'
       - |
-        pip install --no-cache-dir -r hero_lib/requirements.txt
+        pip install --no-cache-dir -r requirements.txt
         pip install pytest flake8 coverage
         flake8 hero_lib/ tests/
         pytest tests/ --cov=hero_lib --cov-fail-under=80
