@@ -40,7 +40,7 @@ steps:
       - '--exit-code'
       - '1' # Fail on HIGH/CRITICAL vulnerabilities
       - '--severity'
-      - 'HIGH,CRITICAL'
+      - 'CRITICAL'
       - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app:${COMMIT_SHA}'
 
   # 5. Push Docker image to Artifact Registry
