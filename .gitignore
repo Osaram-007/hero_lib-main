@@ -1,3 +1,9 @@
 node_modules
 .next
 .env
+__pycache__/
+*.pyc
+.terraform/
+.terraform.lock.hcl
+hero_lib/static/*
+!hero_lib/static/.gitkeep

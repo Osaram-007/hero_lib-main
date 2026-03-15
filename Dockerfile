@@ -37,4 +37,4 @@ EXPOSE 8080
 ENV PORT=8080
 ENV PYTHONUNBUFFERED=1
 
-CMD ["uvicorn", "hero_lib.main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "hero_lib.app:app"]

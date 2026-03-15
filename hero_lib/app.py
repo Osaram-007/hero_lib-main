@@ -1,9 +1,9 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 import pandas as pd
 import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 CORS(app)  # Enable CORS for all routes
 
 # Load data
@@ -18,7 +18,17 @@ def get_books_dataframe():
         print(f"Error reading CSV: {e}")
         return pd.DataFrame()
 
-@app.route('/books', methods=['GET'])
+# Serve static files from the 'static' directory
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_static(path):
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    else:
+        # For Next.js/React routing, serve index.html for unknown paths
+        return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('/api/books', methods=['GET']) # Prefix with /api to avoid collision with frontend
 def get_books():
     page = int(request.args.get('page', 1))
     limit = int(request.args.get('limit', 20))
@@ -27,11 +37,6 @@ def get_books():
     
     if df.empty:
         return jsonify({'data': [], 'total': 0, 'page': page, 'pages': 0}), 200
-        
-    # Rename columns to be friendlier
-    # Assumes columns are "ISBN";"Book-Title";"Book-Author";"Year-Of-Publication";"Publisher";"Image-URL-S";"Image-URL-M";"Image-URL-L"
-    # Based on standard Book-Crossing dataset usually found in these CSVs
-    # We should normalize column names
     
     total_books = len(df)
     total_pages = (total_books + limit - 1) // limit
@@ -54,9 +59,11 @@ def get_books():
         'pages': total_pages
     }), 200
 
-@app.route('/health', methods=['GET'])
+@app.route('/api/health', methods=['GET'])
 def health_check():
     return jsonify({'status': 'healthy'}), 200
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Use PORT from environment variable or default to 5000
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
