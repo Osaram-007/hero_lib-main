@@ -139,6 +139,8 @@ resource "google_project_iam_member" "cloudbuild_roles" {
   for_each = toset([
     "roles/run.developer",
     "roles/artifactregistry.writer",
+    "roles/artifactregistry.admin",
+    "roles/storage.admin",
     "roles/secretmanager.secretAccessor",
     "roles/iam.serviceAccountUser",
     "roles/logging.logWriter"
