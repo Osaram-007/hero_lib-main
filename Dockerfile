@@ -5,7 +5,7 @@ WORKDIR /app/frontend
 
 # Install dependencies
 COPY ["new UI/package.json", "new UI/package-lock.json*", "./"]
-RUN npm ci || npm install
+RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
 
 # Copy frontend source and build
 COPY ["new UI/", "./"]

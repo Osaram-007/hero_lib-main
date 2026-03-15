@@ -19,7 +19,7 @@ steps:
     args:
       - '-c'
       - |
-        npm ci || npm install
+        npm ci --legacy-peer-deps || npm install --legacy-peer-deps
         npm run lint || npx eslint .
         npm test || echo "Warning: No frontend tests defined yet"
 
