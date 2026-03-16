@@ -21,8 +21,14 @@ variable "github_repo" {
   default     = "hero_lib-main"
 }
 
-variable "image" {
-  description = "Docker image to deploy to Cloud Run (provided by Cloud Build)"
+variable "frontend_image" {
+  description = "Docker image to deploy to Cloud Run Frontend (provided by Cloud Build)"
   type        = string
-  default     = "us-docker.pkg.dev/cloudrun/container/hello" # Placeholder for initial deploy
+  default     = "us-docker.pkg.dev/cloudrun/container/hello" # Placeholder
+}
+
+variable "backend_image" {
+  description = "Docker image to deploy to Cloud Run Backend (provided by Cloud Build)"
+  type        = string
+  default     = "us-docker.pkg.dev/cloudrun/container/hello" # Placeholder
 }

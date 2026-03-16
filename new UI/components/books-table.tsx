@@ -25,7 +25,8 @@ export function BooksTable() {
         setLoading(true);
         setError("");
         try {
-            const res = await fetch(`/api/books?page=${page}&limit=12`);
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+            const res = await fetch(`${apiUrl}/api/books?page=${page}&limit=12`);
             if (!res.ok) throw new Error("Failed to fetch books");
             const data = await res.json();
             setBooks(data.data);

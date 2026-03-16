@@ -78,10 +78,10 @@ resource "google_secret_manager_secret_iam_member" "secret_access" {
   member    = "serviceAccount:${google_service_account.cloudrun_sa.email}"
 }
 
-# 5. Cloud Run Service (Production environment deployed from Main branch)
-resource "google_cloud_run_v2_service" "default" {
+# 5a. Cloud Run Service (Frontend)
+resource "google_cloud_run_v2_service" "frontend" {
   provider   = google-beta
-  name       = "hero-app-service"
+  name       = "hero-app-frontend"
   location   = var.region
   ingress    = "INGRESS_TRAFFIC_ALL"
   depends_on = [google_project_service.apis]
@@ -89,8 +89,55 @@ resource "google_cloud_run_v2_service" "default" {
   template {
     service_account = google_service_account.cloudrun_sa.email
     containers {
-      image = var.image
+      image = var.frontend_image
       
+      ports {
+        container_port = 3000
+      }
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [
+      client,
+      client_version
+    ]
+  }
+}
+
+data "google_iam_policy" "noauth_frontend" {
+  binding {
+    role = "roles/run.invoker"
+    members = [
+      "allUsers",
+    ]
+  }
+}
+
+resource "google_cloud_run_service_iam_policy" "noauth_frontend" {
+  location    = google_cloud_run_v2_service.frontend.location
+  project     = google_cloud_run_v2_service.frontend.project
+  service     = google_cloud_run_v2_service.frontend.name
+  policy_data = data.google_iam_policy.noauth_frontend.policy_data
+}
+
+# 5b. Cloud Run Service (Backend)
+resource "google_cloud_run_v2_service" "backend" {
+  provider   = google-beta
+  name       = "hero-app-backend"
+  location   = var.region
+  ingress    = "INGRESS_TRAFFIC_ALL"
+  depends_on = [google_project_service.apis]
+
+  template {
+    service_account = google_service_account.cloudrun_sa.email
+    containers {
+      image = var.backend_image
+      
+      ports {
+        container_port = 5000
+      }
+
       env {
         name = "APP_SECRET"
         value_source {
@@ -111,7 +158,7 @@ resource "google_cloud_run_v2_service" "default" {
   }
 }
 
-data "google_iam_policy" "noauth" {
+data "google_iam_policy" "noauth_backend" {
   binding {
     role = "roles/run.invoker"
     members = [
@@ -120,12 +167,13 @@ data "google_iam_policy" "noauth" {
   }
 }
 
-resource "google_cloud_run_service_iam_policy" "noauth" {
-  location    = google_cloud_run_v2_service.default.location
-  project     = google_cloud_run_v2_service.default.project
-  service     = google_cloud_run_v2_service.default.name
-  policy_data = data.google_iam_policy.noauth.policy_data
+resource "google_cloud_run_service_iam_policy" "noauth_backend" {
+  location    = google_cloud_run_v2_service.backend.location
+  project     = google_cloud_run_v2_service.backend.project
+  service     = google_cloud_run_v2_service.backend.name
+  policy_data = data.google_iam_policy.noauth_backend.policy_data
 }
+
 
 # 6. Cloud Build Service Account (Used for Cloud Build triggers)
 resource "google_service_account" "cloudbuild_sa" {

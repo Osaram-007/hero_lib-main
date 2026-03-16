@@ -3,7 +3,7 @@ from flask_cors import CORS
 import pandas as pd
 import os
 
-app = Flask(__name__, static_folder='static')
+app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
 # Load data
@@ -17,16 +17,6 @@ def get_books_dataframe():
     except Exception as e:
         print(f"Error reading CSV: {e}")
         return pd.DataFrame()
-
-# Serve static files from the 'static' directory
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def serve_static(path):
-    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
-        return send_from_directory(app.static_folder, path)
-    else:
-        # For Next.js/React routing, serve index.html for unknown paths
-        return send_from_directory(app.static_folder, 'index.html')
 
 @app.route('/api/books', methods=['GET']) # Prefix with /api to avoid collision with frontend
 def get_books():

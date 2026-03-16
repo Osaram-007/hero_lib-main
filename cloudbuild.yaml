@@ -23,60 +23,93 @@ steps:
         npm run lint || npx eslint .
         npm test || echo "Warning: No frontend tests defined yet"
 
-  # 3. Build multi-stage Docker image
+  # 3. Build Backend Image
   - name: 'gcr.io/cloud-builders/docker'
-    id: 'build-image'
+    id: 'build-backend'
     args:
       - 'build'
       - '-t'
-      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app:${COMMIT_SHA}'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app-backend:${COMMIT_SHA}'
+      - '-f'
+      - 'Dockerfile.backend'
       - '.'
 
-  # 4. Scan image with Trivy (Container Vulnerability Scanning)
+  # 4. Build Frontend Image (injecting the anticipated backend Cloud Run URL)
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-frontend'
+    args:
+      - 'build'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app-frontend:${COMMIT_SHA}'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_API_URL=https://hero-app-backend-uno3fs2ruq-uc.a.run.app'
+      - '-f'
+      - 'Dockerfile.frontend'
+      - '.'
+
+  # 5. Scan Backend Image
   - name: 'aquasec/trivy'
-    id: 'scan-image'
+    id: 'scan-backend'
     args:
       - 'image'
       - '--exit-code'
       - '1' # Fail on HIGH/CRITICAL vulnerabilities
       - '--severity'
       - 'CRITICAL'
-      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app:${COMMIT_SHA}'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app-backend:${COMMIT_SHA}'
 
-  # 5. Push Docker image to Artifact Registry
+  # 6. Scan Frontend Image
+  - name: 'aquasec/trivy'
+    id: 'scan-frontend'
+    args:
+      - 'image'
+      - '--exit-code'
+      - '1' # Fail on HIGH/CRITICAL vulnerabilities
+      - '--severity'
+      - 'CRITICAL'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app-frontend:${COMMIT_SHA}'
+
+  # 7. Push Backend Image
   - name: 'gcr.io/cloud-builders/docker'
-    id: 'push-image'
+    id: 'push-backend'
     args:
       - 'push'
-      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app:${COMMIT_SHA}'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app-backend:${COMMIT_SHA}'
 
-  # 6. Terraform Init
+  # 8. Push Frontend Image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-frontend'
+    args:
+      - 'push'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app-frontend:${COMMIT_SHA}'
+
+  # 9. Terraform Init
   - name: 'hashicorp/terraform:1.5'
     id: 'terraform-init'
     dir: 'terraform'
     args:
       - 'init'
 
-  # 7. Terraform Plan (Validates Terraform syntax & changes)
+  # 10. Terraform Plan
   - name: 'hashicorp/terraform:1.5'
     id: 'terraform-plan'
     dir: 'terraform'
     env:
       - 'TF_VAR_project_id=${PROJECT_ID}'
       - 'TF_VAR_region=${_REGION}'
-      - 'TF_VAR_image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app:${COMMIT_SHA}'
+      - 'TF_VAR_backend_image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app-backend:${COMMIT_SHA}'
+      - 'TF_VAR_frontend_image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app-frontend:${COMMIT_SHA}'
     args:
       - 'plan'
       - '-out=tfplan'
 
-  # 8. Terraform Apply (Deploy to Cloud Run - Only on PR merge to MAIN)
+  # 11. Terraform Apply (Deploy to Cloud Run - Only on PR merge to MAIN)
   - name: 'hashicorp/terraform:1.5'
     id: 'terraform-apply'
     dir: 'terraform'
     env:
       - 'TF_VAR_project_id=${PROJECT_ID}'
       - 'TF_VAR_region=${_REGION}'
-      - 'TF_VAR_image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app:${COMMIT_SHA}'
     entrypoint: 'sh'
     args:
       - '-c'
@@ -89,7 +122,8 @@ steps:
         fi
 
 images:
-  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app:${COMMIT_SHA}'
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app-backend:${COMMIT_SHA}'
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app-frontend:${COMMIT_SHA}'
 
 substitutions:
   _REGION: 'us-central1'
