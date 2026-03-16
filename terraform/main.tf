@@ -201,8 +201,8 @@ resource "google_project_iam_member" "cloudbuild_roles" {
 # You must create the triggers manually in the GCP Console after connecting the GitHub repository.
 
 # 7. Cloud Monitoring Uptime Check & Alert Policy
-resource "google_monitoring_uptime_check_config" "https" {
-  display_name = "Hero App Uptime Check"
+resource "google_monitoring_uptime_check_config" "frontend_https" {
+  display_name = "Hero App Frontend Uptime Check"
   timeout      = "10s"
   period       = "60s"
 
@@ -223,14 +223,14 @@ resource "google_monitoring_uptime_check_config" "https" {
   depends_on = [google_project_service.apis]
 }
 
-resource "google_monitoring_alert_policy" "uptime_alert" {
-  display_name = "Hero App Down Alert"
+resource "google_monitoring_alert_policy" "frontend_uptime_alert" {
+  display_name = "Hero App Frontend Down Alert"
   combiner     = "OR"
   
   conditions {
     display_name = "Uptime check failed"
     condition_threshold {
-      filter     = "metric.type=\"monitoring.googleapis.com/uptime_check/check_passed\" AND resource.type=\"uptime_url\" AND metric.label.\"check_id\"=\"${google_monitoring_uptime_check_config.https.uptime_check_id}\""
+      filter     = "metric.type=\"monitoring.googleapis.com/uptime_check/check_passed\" AND resource.type=\"uptime_url\" AND metric.label.\"check_id\"=\"${google_monitoring_uptime_check_config.frontend_https.uptime_check_id}\""
       duration   = "300s" # Alert after 5 minutes of failure
       comparison = "COMPARISON_LT"
       threshold_value = 1
