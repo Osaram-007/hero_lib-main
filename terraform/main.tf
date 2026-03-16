@@ -217,7 +217,7 @@ resource "google_monitoring_uptime_check_config" "https" {
     type = "uptime_url"
     labels = {
       project_id = var.project_id
-      host       = split("/", google_cloud_run_v2_service.default.uri)[2]
+      host       = split("/", google_cloud_run_v2_service.frontend.uri)[2]
     }
   }
   depends_on = [google_project_service.apis]
