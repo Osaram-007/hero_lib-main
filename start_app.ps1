@@ -1,4 +1,4 @@
-Write-Host "Starting Libera Application..." -ForegroundColor Cyan
+Write-Host "Starting Krisha's Library Application..." -ForegroundColor Cyan
 
 # 0. Ensure Virtual Environment Exists
 if (-not (Test-Path -Path "venv")) {
@@ -16,11 +16,11 @@ if ($LASTEXITCODE -ne 0) {
 
 # 2. Start Backend (Flask)
 Write-Host "Starting Backend Server (Flask)..." -ForegroundColor Green
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "& { $host.UI.RawUI.WindowTitle = 'Libera Backend'; .\venv\Scripts\python -m hero_lib.app }"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "& { $host.UI.RawUI.WindowTitle = 'Krisha Library Backend'; .\venv\Scripts\python -m hero_lib.app }"
 
 # 3. Start Frontend (Next.js)
 Write-Host "Starting Frontend Server (Next.js)..." -ForegroundColor Green
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "& { $host.UI.RawUI.WindowTitle = 'Libera Frontend'; cd 'new UI'; npm run dev }"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "& { $host.UI.RawUI.WindowTitle = 'Krisha Library Frontend'; cd 'new UI'; npm run dev }"
 
 Write-Host "Application functionality is splitting across two new windows." -ForegroundColor Cyan
 Write-Host "Backend: http://localhost:5000"
