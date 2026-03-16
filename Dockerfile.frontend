@@ -21,6 +21,9 @@ RUN mkdir -p /app/out
 # Stage 2: Serve with Nginx
 FROM nginx:alpine
 
+# Upgrade system packages to fix any critical vulnerabilities (e.g., zlib CVEs) detected by Trivy
+RUN apk update && apk upgrade
+
 # Copy the built output to Nginx's default public directory
 COPY --from=builder /app/out /usr/share/nginx/html
 
