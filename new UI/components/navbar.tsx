@@ -8,7 +8,7 @@ export function NavBar() {
                     <div className="h-10 w-10 bg-gradient-to-tr from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 group-hover:rotate-3 transition-transform duration-300">
                         <span className="text-white dark:text-slate-900 font-bold text-xl drop-shadow-md">L</span>
                     </div>
-                    <h1 className="text-2xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">Krisha's Library</h1>
+                    <h1 className="text-2xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">Liberia</h1>
                 </Link>
                 <nav className="hidden md:flex items-center gap-8">
                     {['Overview', 'Books', 'Authors', 'Community'].map((item) => (

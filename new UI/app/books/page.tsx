@@ -36,7 +36,7 @@ export default function BooksPage() {
 
             <footer className="border-t border-slate-200/60 dark:border-slate-800/60 mt-20 py-12 bg-slate-50/50 dark:bg-slate-900/20">
                 <div className="max-w-7xl mx-auto px-6 text-center text-slate-500 dark:text-slate-400 text-sm font-medium">
-                    <p>© 2024 Krisha's Library. All rights reserved.</p>
+                    <p>© 2024 Liberia. All rights reserved.</p>
                 </div>
             </footer>
         </main>

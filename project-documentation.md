@@ -1,4 +1,4 @@
-# 📚 Hero Lib — Full Project Documentation
+# 📚 Liberia — Full Project Documentation
 
 > A book catalogue web application with a Python backend API and a Next.js frontend, deployed on Google Cloud Run via a fully automated CI/CD pipeline.
 
@@ -21,7 +21,7 @@
 
 ## 1. Project Overview
 
-**Hero Lib** is a web application that lets users browse a catalogue of books. It is split into two independent services:
+**Liberia** is a web application that lets users browse a catalogue of books. It is split into two independent services:
 
 | Service | Language | What it does |
 |---|---|---|
