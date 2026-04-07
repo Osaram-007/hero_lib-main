@@ -42,13 +42,13 @@ steps:
       - '-t'
       - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app-frontend:${COMMIT_SHA}'
       - '--build-arg'
-      - 'NEXT_PUBLIC_API_URL=https://hero-app-backend-uno3fs2ruq-uc.a.run.app'
+      - 'NEXT_PUBLIC_API_URL=https://hero-app-backend-247011961738.us-central1.run.app'
       - '-f'
       - 'Dockerfile.frontend'
       - '.'
 
   # 5. Scan Backend Image
-  - name: 'aquasec/trivy'
+  - name: 'us-central1-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/trivy:latest'
     id: 'scan-backend'
     args:
       - 'image'
@@ -59,7 +59,7 @@ steps:
       - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app-backend:${COMMIT_SHA}'
 
   # 6. Scan Frontend Image
-  - name: 'aquasec/trivy'
+  - name: 'us-central1-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/trivy:latest'
     id: 'scan-frontend'
     args:
       - 'image'
