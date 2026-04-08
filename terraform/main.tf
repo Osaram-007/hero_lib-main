@@ -220,6 +220,11 @@ resource "google_monitoring_uptime_check_config" "frontend_https" {
       host       = split("/", google_cloud_run_v2_service.frontend.uri)[2]
     }
   }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
   depends_on = [google_project_service.apis]
 }
 
@@ -242,5 +247,10 @@ resource "google_monitoring_alert_policy" "frontend_uptime_alert" {
       }
     }
   }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
   depends_on = [google_project_service.apis]
 }

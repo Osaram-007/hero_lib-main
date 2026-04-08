@@ -42,7 +42,7 @@ steps:
       - '-t'
       - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app-frontend:${COMMIT_SHA}'
       - '--build-arg'
-      - 'NEXT_PUBLIC_API_URL=https://hero-app-backend-247011961738.us-central1.run.app'
+      - 'NEXT_PUBLIC_API_URL=https://hero-app-backend-uno3fs2ruq-uc.a.run.app'
       - '-f'
       - 'Dockerfile.frontend'
       - '.'
