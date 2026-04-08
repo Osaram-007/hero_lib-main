@@ -8,7 +8,7 @@ export function NavBar() {
                     <div className="h-10 w-10 bg-gradient-to-tr from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 group-hover:rotate-3 transition-transform duration-300">
                         <span className="text-white dark:text-slate-900 font-bold text-xl drop-shadow-md">L</span>
                     </div>
-                    <h1 className="text-2xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">Liberia</h1>
+                    <h1 className="text-2xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">Krisha's Library</h1>
                 </Link>
                 <nav className="hidden md:flex items-center gap-8">
                     {['Overview', 'Books', 'Authors', 'Community'].map((item) => (
@@ -16,8 +16,8 @@ export function NavBar() {
                             key={item}
                             href={item === 'Books' ? '/books' : '#'}
                             className={`text-sm font-semibold transition-all duration-300 relative after:content-[''] after:absolute after:-bottom-1.5 after:left-0 after:w-0 after:h-0.5 after:bg-slate-900 dark:after:bg-white hover:after:w-full after:transition-all after:duration-300 ${item === 'Books'
-                                    ? 'text-slate-900 dark:text-white after:w-full'
-                                    : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                                ? 'text-slate-900 dark:text-white after:w-full'
+                                : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
                                 }`}
                         >
                             {item}
