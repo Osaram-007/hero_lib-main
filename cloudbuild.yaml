@@ -47,24 +47,26 @@ steps:
       - 'Dockerfile.frontend'
       - '.'
 
-  # 5. Scan Backend Image
-  - name: 'us-central1-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/trivy:latest'
+  # 5. Scan Backend Image (using official Trivy)
+  - name: 'aquasec/trivy:latest'
     id: 'scan-backend'
+    entrypoint: 'trivy'
     args:
       - 'image'
       - '--exit-code'
-      - '1' # Fail on HIGH/CRITICAL vulnerabilities
+      - '1'
       - '--severity'
       - 'CRITICAL'
       - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app-backend:${COMMIT_SHA}'
 
-  # 6. Scan Frontend Image
-  - name: 'us-central1-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/trivy:latest'
+  # 6. Scan Frontend Image (using official Trivy)
+  - name: 'aquasec/trivy:latest'
     id: 'scan-frontend'
+    entrypoint: 'trivy'
     args:
       - 'image'
       - '--exit-code'
-      - '1' # Fail on HIGH/CRITICAL vulnerabilities
+      - '1'
       - '--severity'
       - 'CRITICAL'
       - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO_NAME}/hero-app-frontend:${COMMIT_SHA}'
