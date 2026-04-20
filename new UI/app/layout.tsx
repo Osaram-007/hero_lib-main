@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
     title: "Liberias",
-    description: "Modern Library Management Platform",
+    description: "Modern Library Management System v2",
 };
 
 export default function RootLayout({
