@@ -6,7 +6,7 @@ import { NavBar } from "@/components/navbar";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-    title: "Hero Lib",
+    title: "pce",
     description: "Modern Library Management System v2",
 };
 
